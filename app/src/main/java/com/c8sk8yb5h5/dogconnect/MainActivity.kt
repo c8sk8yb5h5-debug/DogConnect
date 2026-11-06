@@ -45,7 +45,7 @@ class MainActivity : Activity() {
             setPadding(0, dp(8), 0, dp(28))
         }
         val launch = actionButton("打开 SSRDOG") { launchSsrDog() }
-        val enable = actionButton("开启控件检测") {
+        val update = actionButton("检查更新") { UpdateManager.check(this) }.apply {\n            setTextColor(Color.rgb(35, 105, 180))\n            background = rounded(Color.WHITE)\n        }\n        val enable = actionButton("开启控件检测") {
             startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
         }.apply {
             setTextColor(Color.rgb(35, 105, 180))
@@ -77,7 +77,7 @@ class MainActivity : Activity() {
 
         root.addView(title)
         root.addView(subtitle)
-        root.addView(launch, LinearLayout.LayoutParams(-1, dp(58)))
+        root.addView(launch, LinearLayout.LayoutParams(-1, dp(58)))\n        root.addView(update, LinearLayout.LayoutParams(-1, dp(48)).apply { topMargin = dp(10) })
         root.addView(enable, LinearLayout.LayoutParams(-1, dp(52)).apply { topMargin = dp(12) })
         root.addView(serviceStatus)
         root.addView(reportTitle)
