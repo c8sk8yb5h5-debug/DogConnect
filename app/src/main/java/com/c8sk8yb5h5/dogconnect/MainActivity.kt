@@ -1,17 +1,24 @@
 package com.c8sk8yb5h5.dogconnect
 
+import android.accessibilityservice.AccessibilityServiceInfo
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.provider.Settings
 import android.view.Gravity
 import android.view.View
+import android.view.accessibility.AccessibilityManager
 import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.TextView
 
 class MainActivity : Activity() {
+    private lateinit var serviceStatus: TextView
+    private lateinit var diagnostic: TextView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.statusBarColor = Color.rgb(244, 247, 251)
@@ -20,11 +27,10 @@ class MainActivity : Activity() {
 
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER
-            setPadding(dp(28), dp(32), dp(28), dp(32))
+            gravity = Gravity.CENTER_HORIZONTAL
+            setPadding(dp(24), dp(28), dp(24), dp(24))
             setBackgroundColor(Color.rgb(244, 247, 251))
         }
-
         val title = TextView(this).apply {
             text = "DogConnect"
             textSize = 28f
@@ -37,50 +43,96 @@ class MainActivity : Activity() {
             textSize = 14f
             setTextColor(Color.rgb(120, 132, 148))
             gravity = Gravity.CENTER
-            setPadding(0, dp(8), 0, dp(36))
+            setPadding(0, dp(8), 0, dp(28))
         }
-        val button = TextView(this).apply {
-            text = "打开 SSRDOG"
-            textSize = 18f
-            typeface = Typeface.DEFAULT_BOLD
-            setTextColor(Color.WHITE)
-            gravity = Gravity.CENTER
-            background = GradientDrawable().apply {
-                setColor(Color.rgb(22, 137, 245))
-                cornerRadius = dp(28).toFloat()
-            }
-            setPadding(dp(34), dp(18), dp(34), dp(18))
-            isClickable = true
-            isFocusable = true
-            setOnClickListener { launchSsrDog() }
+        val launch = actionButton("打开 SSRDOG") { launchSsrDog() }
+        val enable = actionButton("开启控件检测") {
+            startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+        }.apply {
+            setTextColor(Color.rgb(35, 105, 180))
+            background = rounded(Color.WHITE)
         }
-        val status = TextView(this).apply {
+        serviceStatus = TextView(this).apply {
             textSize = 13f
-            setTextColor(Color.rgb(120, 132, 148))
+            setTextColor(Color.rgb(100, 115, 130))
             gravity = Gravity.CENTER
-            setPadding(0, dp(22), 0, 0)
-            text = if (isSsrDogInstalled()) "已检测到 SSRDOG Lite" else "未检测到 SSRDOG Lite"
+            setPadding(0, dp(12), 0, dp(18))
+        }
+        val reportTitle = TextView(this).apply {
+            text = "控件检测结果"
+            textSize = 14f
+            typeface = Typeface.DEFAULT_BOLD
+            setTextColor(Color.rgb(45, 55, 70))
+            setPadding(0, dp(12), 0, dp(8))
+        }
+        diagnostic = TextView(this).apply {
+            textSize = 11f
+            setTextColor(Color.rgb(75, 85, 100))
+            setTextIsSelectable(true)
+            setPadding(dp(12), dp(12), dp(12), dp(12))
+            background = rounded(Color.WHITE)
+        }
+        val scroll = ScrollView(this).apply {
+            addView(diagnostic)
         }
 
         root.addView(title)
         root.addView(subtitle)
-        root.addView(button, LinearLayout.LayoutParams(-1, dp(60)))
-        root.addView(status)
+        root.addView(launch, LinearLayout.LayoutParams(-1, dp(58)))
+        root.addView(enable, LinearLayout.LayoutParams(-1, dp(52)).apply { topMargin = dp(12) })
+        root.addView(serviceStatus)
+        root.addView(reportTitle)
+        root.addView(scroll, LinearLayout.LayoutParams(-1, 0, 1f))
         setContentView(root)
+        refreshDiagnostic()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (::serviceStatus.isInitialized) refreshDiagnostic()
+    }
+
+    private fun refreshDiagnostic() {
+        val enabled = isInspectorEnabled()
+        serviceStatus.text = if (enabled) "控件检测已开启" else "控件检测未开启"
+        val prefs = getSharedPreferences(SsrDogInspectorService.PREFS, MODE_PRIVATE)
+        val tree = prefs.getString(SsrDogInspectorService.KEY_TREE, null)
+        diagnostic.text = tree ?: "暂无数据。开启控件检测后，打开 SSRDOG Lite，再返回此页面。"
+    }
+
+    private fun isInspectorEnabled(): Boolean {
+        val manager = getSystemService(ACCESSIBILITY_SERVICE) as AccessibilityManager
+        return manager.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK)
+            .any { it.resolveInfo.serviceInfo.packageName == packageName &&
+                it.resolveInfo.serviceInfo.name == SsrDogInspectorService::class.java.name }
     }
 
     private fun launchSsrDog() {
-        val launchIntent = packageManager.getLaunchIntentForPackage(SSR_DOG_PACKAGE)
-        if (launchIntent == null) {
+        val intent = packageManager.getLaunchIntentForPackage(SSR_DOG_PACKAGE)
+        if (intent == null) {
             android.widget.Toast.makeText(this, "请先安装 SSRDOG Lite", android.widget.Toast.LENGTH_LONG).show()
             return
         }
-        launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        startActivity(launchIntent)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        startActivity(intent)
     }
 
-    private fun isSsrDogInstalled(): Boolean =
-        packageManager.getLaunchIntentForPackage(SSR_DOG_PACKAGE) != null
+    private fun actionButton(label: String, action: () -> Unit) = TextView(this).apply {
+        text = label
+        textSize = 17f
+        typeface = Typeface.DEFAULT_BOLD
+        setTextColor(Color.WHITE)
+        gravity = Gravity.CENTER
+        background = rounded(Color.rgb(22, 137, 245))
+        isClickable = true
+        isFocusable = true
+        setOnClickListener { action() }
+    }
+
+    private fun rounded(color: Int) = GradientDrawable().apply {
+        setColor(color)
+        cornerRadius = dp(24).toFloat()
+    }
 
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 
