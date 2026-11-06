@@ -2,4 +2,5 @@
     <string name="app_name">DogConnect</string>
     <string name="widget_name">DogConnect</string>
     <string name="widget_description">一键打开 SSRDOG Lite</string>
+    <string name="accessibility_service_description">仅读取 SSRDOG Lite 的界面控件信息，用于兼容性诊断；不会执行点击或修改连接状态。</string>
 </resources>
