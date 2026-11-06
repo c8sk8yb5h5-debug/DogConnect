@@ -5,6 +5,7 @@ import android.graphics.Rect
 import android.os.Handler
 import android.os.Looper
 import android.util.DisplayMetrics
+import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 
@@ -56,7 +57,7 @@ class SsrDogInspectorService : AccessibilityService() {
         if (now - prefs.getLong(KEY_LAST_ATTEMPT, 0L) < ATTEMPT_COOLDOWN_MS) return
         val metrics = DisplayMetrics()
         @Suppress("DEPRECATION")
-        windowManager.defaultDisplay.getRealMetrics(metrics)
+        (getSystemService(WINDOW_SERVICE) as WindowManager).defaultDisplay.getRealMetrics(metrics)
         val target = chooseConnectControl(nodes, metrics.widthPixels, metrics.heightPixels)
         if (target == null) {
             prefs.edit().putString(KEY_STATE, "未找到明确的连接开关，未执行点击").apply()
