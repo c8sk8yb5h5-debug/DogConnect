@@ -1,18 +1,18 @@
 # DogConnect
 
-A lightweight Android companion for launching SSRDOG Lite on HarmonyOS NEXT devices.
+A lightweight Android companion for launching and inspecting SSRDOG Lite on HarmonyOS NEXT devices.
 
 ## Current milestone
 
 - Native Android APK; no AppGallery submission required.
 - One-tap launch of the installed SSRDOG Lite app from the home-screen widget.
-- Detect whether SSRDOG Lite is installed.
-- APK inspection found SSRDOG's built-in Quick Settings Tile service (`io.nekohasekai.sfa.bg.TileService`). Upstream sing-box Android implementation toggles its background service from that tile. On HarmonyOS NEXT, verify whether the system exposes this tile in Control Center.
-- DogConnect does not claim to toggle the VPN directly; direct app-to-app control is not exposed by Android's Quick Settings API.
+- Optional, user-enabled AccessibilityService limited to the SSRDOG package.
+- Diagnostic-only accessibility tree capture to determine whether SSRDOG's custom connection switch is exposed as an accessible control.
+- No automatic clicks, gestures, VPN state changes, accounts, analytics, ads, or network requests.
 
-## Important limitation
+## Why diagnostic first
 
-DogConnect does not bundle SSRDOG's proprietary code, reuse its private APIs, or handle subscription credentials. Direct connection automation will only be added if a supported public integration point or a reliable, user-authorized accessibility flow can be verified on the target device.
+SSRDOG Lite connects successfully in the HarmonyOS NEXT compatibility environment, but its Android Quick Settings tile is not exposed in Control Center. The connection switch is custom-drawn, so screenshots alone cannot establish whether Android accessibility can identify it. DogConnect first captures the accessibility node tree. Automated connection control will only be implemented after that tree and real-device behavior are verified.
 
 ## Build
 
