@@ -67,10 +67,15 @@ jobs:
       - name: Verify APK package, version and signature
         run: |
           set -euo pipefail
+          set -euo pipefail
           APK=app/build/outputs/apk/release/app-release.apk
           test -f "$APK"
-          apksigner verify --verbose "$APK"
-          aapt dump badging "$APK" | grep -F "package: name='com.c8sk8yb5h5.dogconnect' versionName='0.2.$GITHUB_RUN_NUMBER'"
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
+          AAPT="$(find "$ANDROID_HOME/build-tools" -type f -name aapt | sort -V | tail -n 1)"
+          test -x "$APKSIGNER"
+          test -x "$AAPT"
+          "$APKSIGNER" verify --verbose "$APK"
+          "$AAPT" dump badging "$APK" | grep -F "package: name='com.c8sk8yb5h5.dogconnect' versionName='0.2.$GITHUB_RUN_NUMBER'"
 
       - name: Publish signed APK automatically
         uses: softprops/action-gh-release@v2
