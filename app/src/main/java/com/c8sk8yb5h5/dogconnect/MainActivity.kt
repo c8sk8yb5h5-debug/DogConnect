@@ -1,6 +1,5 @@
 package com.c8sk8yb5h5.dogconnect
 
-import android.accessibilityservice.AccessibilityServiceInfo
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Color
@@ -10,7 +9,7 @@ import android.os.Bundle
 import android.provider.Settings
 import android.view.Gravity
 import android.view.View
-import android.view.accessibility.AccessibilityManager
+import android.provider.Settings.Secure
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
@@ -101,10 +100,9 @@ class MainActivity : Activity() {
     }
 
     private fun isInspectorEnabled(): Boolean {
-        val manager = getSystemService(ACCESSIBILITY_SERVICE) as AccessibilityManager
-        return manager.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK)
-            .any { it.resolveInfo.serviceInfo.packageName == packageName &&
-                it.resolveInfo.serviceInfo.name == SsrDogInspectorService::class.java.name }
+        val enabled = Secure.getString(contentResolver, Secure.ENABLED_ACCESSIBILITY_SERVICES).orEmpty()
+        val component = android.content.ComponentName(this, SsrDogInspectorService::class.java)
+        return enabled.split(':').any { it.equals(component.flattenToString(), ignoreCase = true) }
     }
 
     private fun launchSsrDog() {
