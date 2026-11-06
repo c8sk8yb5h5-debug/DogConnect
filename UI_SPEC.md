@@ -1,10 +1,9 @@
 # DogConnect UI
 
-- Native Android APK for HarmonyOS NEXT Android compatibility.
-- Minimal single-screen utility.
+- Minimal native Android utility.
 - Primary action: open installed SSRDOG Lite.
-- Secondary action: open Android accessibility settings for optional SSRDOG-only control inspection.
-- Show the latest captured accessibility node tree for diagnosis.
-- Diagnostic service is read-only: it must not click, gesture, or alter VPN state.
+- Secondary action: check for DogConnect updates.
+- Update flow: latest stable GitHub Release → version comparison → APK download → package-name validation → system package installer confirmation.
+- Diagnostic action: enable SSRDOG-only accessibility tree inspection.
+- Diagnostic service is read-only and must not click, gesture, or alter VPN state.
 - Home-screen widget remains a launcher, not a VPN toggle.
-- No accounts, analytics, ads, subscription import, or network requests.
