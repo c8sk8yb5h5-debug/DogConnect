@@ -1,9 +1,8 @@
 # DogConnect UI
 
-- Minimal native Android utility.
-- Primary action: open installed SSRDOG Lite.
-- Secondary action: check for DogConnect updates.
-- Update flow: latest stable GitHub Release → version comparison → APK download → package-name validation → system package installer confirmation.
-- Diagnostic action: enable SSRDOG-only accessibility tree inspection.
-- Diagnostic service is read-only and must not click, gesture, or alter VPN state.
-- Home-screen widget remains a launcher, not a VPN toggle.
+- Opening DogConnect automatically launches SSRDOG Lite.
+- State-aware auto-connect: never click if SSRDOG reports connected; attempt one connection-control click only when disconnected is explicit and the target is unambiguous.
+- Accessibility service is required for connection automation.
+- Android VPN consent is a system prompt and cannot be silently approved.
+- Keep update and accessibility permission actions available.
+- Home-screen widget remains a launcher.
