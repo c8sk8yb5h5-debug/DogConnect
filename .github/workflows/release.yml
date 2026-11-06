@@ -2,11 +2,20 @@ name: DogConnect Release
 
 on:
   push:
-    tags:
-      - "v*"
+    branches: [main]
+    paths:
+      - "app/**"
+      - "*.gradle.kts"
+      - "settings.gradle.kts"
+      - "gradle.properties"
+      - ".github/workflows/release.yml"
 
 permissions:
   contents: write
+
+concurrency:
+  group: dogconnect-release
+  cancel-in-progress: false
 
 jobs:
   release:
@@ -23,8 +32,7 @@ jobs:
       - uses: android-actions/setup-android@v3
         with:
           packages: platform-tools platforms;android-35 build-tools;35.0.0
-      - name: Configure AndroidX
-        run: echo 'android.useAndroidX=true' >> gradle.properties
+
       - name: Validate signing secrets
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
@@ -32,12 +40,14 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
+          set -euo pipefail
           test -n "$KEYSTORE_BASE64" || (echo "Missing KEYSTORE_BASE64" && exit 1)
           test -n "$KEYSTORE_PASSWORD" || (echo "Missing KEYSTORE_PASSWORD" && exit 1)
           test -n "$KEY_ALIAS" || (echo "Missing KEY_ALIAS" && exit 1)
           test -n "$KEY_PASSWORD" || (echo "Missing KEY_PASSWORD" && exit 1)
           echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/dogconnect-release.jks"
           keytool -list -keystore "$RUNNER_TEMP/dogconnect-release.jks" -storepass "$KEYSTORE_PASSWORD" -alias "$KEY_ALIAS" >/dev/null
+
       - name: Build signed release APK
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
@@ -45,18 +55,30 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
+          set -euo pipefail
           echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/dogconnect-release.jks"
           gradle --no-daemon assembleRelease \
+            -Pdogconnect.releaseRun="$GITHUB_RUN_NUMBER" \
             -Pandroid.injected.signing.store.file="$RUNNER_TEMP/dogconnect-release.jks" \
             -Pandroid.injected.signing.store.password="$KEYSTORE_PASSWORD" \
             -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
             -Pandroid.injected.signing.key.password="$KEY_PASSWORD"
-      - name: Verify APK signature
+
+      - name: Verify APK package, version and signature
         run: |
+          set -euo pipefail
           APK=app/build/outputs/apk/release/app-release.apk
           test -f "$APK"
           apksigner verify --verbose "$APK"
-      - uses: softprops/action-gh-release@v2
+          aapt dump badging "$APK" | grep -F "package: name='com.c8sk8yb5h5.dogconnect' versionName='0.2.$GITHUB_RUN_NUMBER'"
+
+      - name: Publish signed APK automatically
+        uses: softprops/action-gh-release@v2
         with:
+          tag_name: v0.2.${{ github.run_number }}
+          name: DogConnect v0.2.${{ github.run_number }}
+          target_commitish: ${{ github.sha }}
           files: app/build/outputs/apk/release/app-release.apk
           generate_release_notes: true
+          fail_on_unmatched_files: true
+          make_latest: true
