@@ -16,7 +16,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"
-        android:text="连接 SSRDOG"
+        android:text="打开 SSRDOG"
         android:textColor="#FFFFFF"
         android:textSize="16sp"
         android:textStyle="bold" />
