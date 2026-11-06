@@ -5,9 +5,10 @@ A lightweight Android companion for launching SSRDOG Lite on HarmonyOS NEXT devi
 ## Current milestone
 
 - Native Android APK; no AppGallery submission required.
-- One-tap launch of the installed SSRDOG Lite app.
+- One-tap launch of the installed SSRDOG Lite app from the home-screen widget.
 - Detect whether SSRDOG Lite is installed.
-- Investigate a safe, explicit connection trigger before attempting automation.
+- APK inspection found SSRDOG's built-in Quick Settings Tile service (`io.nekohasekai.sfa.bg.TileService`). Upstream sing-box Android implementation toggles its background service from that tile. On HarmonyOS NEXT, verify whether the system exposes this tile in Control Center.
+- DogConnect does not claim to toggle the VPN directly; direct app-to-app control is not exposed by Android's Quick Settings API.
 
 ## Important limitation
 
