@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">DogConnect</string>
+    <string name="widget_name">DogConnect</string>
+    <string name="widget_description">一键打开 SSRDOG Lite</string>
+</resources>
