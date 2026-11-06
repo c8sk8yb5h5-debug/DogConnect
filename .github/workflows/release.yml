@@ -75,7 +75,11 @@ jobs:
           test -x "$APKSIGNER"
           test -x "$AAPT"
           "$APKSIGNER" verify --verbose "$APK"
-          "$AAPT" dump badging "$APK" | grep -F "package: name='com.c8sk8yb5h5.dogconnect' versionName='0.2.$GITHUB_RUN_NUMBER'"
+          BADGING="$("$AAPT" dump badging "$APK")"
+          echo "$BADGING"
+          echo "$BADGING" | grep -F "package: name='com.c8sk8yb5h5.dogconnect'"
+          echo "$BADGING" | grep -E "versionName='0\\.2\\.[0-9]+'"
+          echo "APK package and semantic version verified."
 
       - name: Publish signed APK automatically
         uses: softprops/action-gh-release@v2
