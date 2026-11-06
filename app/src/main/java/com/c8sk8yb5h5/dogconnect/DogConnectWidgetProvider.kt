@@ -14,7 +14,9 @@ class DogConnectWidgetProvider : AppWidgetProvider() {
         appWidgetManager: AppWidgetManager,
         appWidgetIds: IntArray
     ) {
-        val launch = Intent(context, MainActivity::class.java)
+        val launch = context.packageManager.getLaunchIntentForPackage(SSR_DOG_PACKAGE)
+            ?: Intent(context, MainActivity::class.java)
+        launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         val pendingIntent = PendingIntent.getActivity(
             context,
             0,
@@ -29,6 +31,8 @@ class DogConnectWidgetProvider : AppWidgetProvider() {
     }
 
     companion object {
+        private const val SSR_DOG_PACKAGE = "com.ssrdog"
+
         fun refresh(context: Context) {
             val manager = AppWidgetManager.getInstance(context)
             val component = ComponentName(context, DogConnectWidgetProvider::class.java)
