@@ -23,6 +23,8 @@ jobs:
       - uses: android-actions/setup-android@v3
         with:
           packages: platform-tools platforms;android-35 build-tools;35.0.0
+      - name: Configure AndroidX
+        run: echo 'android.useAndroidX=true' >> gradle.properties
       - name: Validate signing secrets
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
